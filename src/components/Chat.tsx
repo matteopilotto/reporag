@@ -2,9 +2,15 @@
 
 import { useChat } from "ai/react";
 import { useEffect, useRef } from "react";
+import { useNamespace } from "./NamespaceContext";
 
 export function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const { currentNamespace } = useNamespace();
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    body: {
+      namespace: currentNamespace,
+    },
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {

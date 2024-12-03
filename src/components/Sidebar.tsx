@@ -3,12 +3,14 @@
 import { History, Plus, PlusIcon, Zap } from "lucide-react";
 import { CodebaseSelectionDialog } from "./NewConversationDialog";
 
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -36,13 +38,20 @@ const items = [
 
 export function AppSidebar() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  //   const codebases = useCodebases();
+  const [currentNamespace, setCurrentNamespace] = useState("");
+
+  const codebases = useQuery(api.functions.codebases.list);
 
   const handleNewConversation = () => {
     setIsDialogOpen(true);
   };
 
-  const handleCodebaseSelect = (codebase: string) => {
-    console.log("Selected codebase: ", codebase);
+  const handleCodebaseSelect = (gitUrl: string) => {
+    if (gitUrl) {
+      setCurrentNamespace(gitUrl);
+      console.log("Selected codebase: ", gitUrl);
+    }
     setIsDialogOpen(false);
   };
 

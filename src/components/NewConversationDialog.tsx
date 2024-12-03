@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 
+// convex
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useNamespace } from "./NamespaceContext";
+
 interface CodebaseSelectionDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,7 +25,13 @@ export function CodebaseSelectionDialog({
   onClose,
   onSelect,
 }: CodebaseSelectionDialogProps) {
+  const { setCurrentNamespace } = useNamespace();
   const [selectedValue, setSelectedValue] = useState("");
+  // query codebases available to the user
+  const codebases = useQuery(api.functions.codebases.list);
+  if (!codebases) {
+    return;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -35,8 +46,13 @@ export function CodebaseSelectionDialog({
             onChange={(e) => setSelectedValue(e.target.value)}
           >
             <option value="">Select a codebase</option>
-            <option value="repo1">Repository 1</option>
-            <option value="repo2">Repository 2</option>
+            {/* <option value="repo1">Repository 1</option>
+            <option value="repo2">Repository 2</option> */}
+            {codebases.map((codebase) => (
+              <option key={codebase._id} value={codebase.gitUrl}>
+                {codebase.name}
+              </option>
+            ))}
           </select>
           <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
             <ChevronDownIcon className="h-4 w-4" />
@@ -46,7 +62,9 @@ export function CodebaseSelectionDialog({
           <Button
             disabled={!selectedValue}
             onClick={() => {
-              onSelect(selectedValue), onClose();
+              setCurrentNamespace(selectedValue),
+                onSelect(selectedValue),
+                onClose();
             }}
           >
             Continue

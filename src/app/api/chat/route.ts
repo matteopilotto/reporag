@@ -6,12 +6,16 @@ import { getContext } from "@/lib/context";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
-  console.log("Input Messages", messages);
+  // const body = await req.json();
+  // console.log("Request body:", body);
+
+  const { messages, namespace } = await req.json();
+  // console.log("Input Messages", messages);
+  console.log("Namespace", namespace);
   const lastMessage = messages[messages.length - 1];
   const originalLastMessage = { ...lastMessage };
   // const queryEmbedding = await getQueryEmbedding(lastMessage.content);
-  const context = await getContext(lastMessage.content);
+  const context = await getContext(lastMessage.content, namespace);
   const augmentedMessages = [
     ...messages.slice(0, -1),
     {
@@ -43,7 +47,10 @@ export async function POST(req: Request) {
 
   // return result.toDataStreamResponse();
   const response = result.toDataStreamResponse();
-  response.headers.set('X-Augmented-History', JSON.stringify(augmentedMessages));
-  
+  response.headers.set(
+    "X-Augmented-History",
+    JSON.stringify(augmentedMessages)
+  );
+
   return response;
 }

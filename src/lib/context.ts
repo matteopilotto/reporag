@@ -1,7 +1,10 @@
 import { Pinecone } from "@pinecone-database/pinecone";
 import { getQueryEmbedding } from "./embeddings";
 
-export async function getSimilarContent(queryEmbedding: number[]) {
+export async function getSimilarContent(
+  queryEmbedding: number[],
+  namespace: string
+) {
   try {
     const pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY!,
@@ -10,7 +13,7 @@ export async function getSimilarContent(queryEmbedding: number[]) {
     const pineconeIndex = pinecone.Index("codebase-rag");
 
     // TODO: implement dynamic namespace name
-    const namespace = "https://github.com/CoderAgent/SecureAgent";
+    // const namespace = "https://github.com/CoderAgent/SecureAgent";
     const relevantContent = await pineconeIndex.namespace(namespace).query({
       vector: queryEmbedding,
       topK: 2,
@@ -24,12 +27,13 @@ export async function getSimilarContent(queryEmbedding: number[]) {
   }
 }
 
-export async function getContext(query: string) {
+export async function getContext(query: string, namespace: string) {
   const queryEmbedding = await getQueryEmbedding(query);
-  const relevantContent = await getSimilarContent(queryEmbedding);
+  const relevantContent = await getSimilarContent(queryEmbedding, namespace);
+  console.log("Relevant Content", relevantContent);
 
   const relevantContentFiltered = relevantContent.filter(
-    (content) => content.score && content.score > 0.4
+    (content) => content.score && content.score > 0.2
   );
 
   const relevantText = relevantContentFiltered.map(
